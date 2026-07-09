@@ -43,7 +43,7 @@ def cmd_status(args) -> int:
         render.info("No sessions yet. Start one with 'stepgate propose'.")
         return 0
 
-    table = Table(title="stepgate — project status", border_style="dim")
+    table = Table(title="stepgate :: project status", border_style="dim")
     table.add_column("Session", style="magenta")
     table.add_column("State")
     table.add_column("Closed", justify="right")
@@ -86,7 +86,7 @@ def cmd_status(args) -> int:
                 )
 
     for message in _overlaps(sessions):
-        render.warn("scope overlap — " + message + ". Informational only, nothing is blocked.")
+        render.warn("scope overlap - " + message + ". Informational only, nothing is blocked.")
     return 0
 
 
@@ -111,7 +111,7 @@ def cmd_history(args) -> int:
     if not entries:
         render.info("No history entries match.")
         return 0
-    table = Table(title="stepgate — history (append-only)", border_style="dim")
+    table = Table(title="stepgate :: history (append-only)", border_style="dim")
     table.add_column("When", style="dim", no_wrap=True)
     table.add_column("Session", style="magenta", no_wrap=True)
     table.add_column("Event")

@@ -53,9 +53,9 @@ def cmd_doctor(args) -> int:
         return 0
     render.info(f"[yellow]doctor: found {len(problems)} problem(s) in {store.dir}:[/]")
     for problem in problems:
-        render.info(f"  • {problem}")
+        render.info(f"  - {problem}")
     render.info(
-        "[dim]stepgate never repairs state automatically — please inspect the "
+        "[dim]stepgate never repairs state automatically - please inspect the "
         "files above manually. Other sessions and normal project work are "
         "not blocked by this.[/]"
     )

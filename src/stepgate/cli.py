@@ -25,7 +25,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="stepgate",
         description=(
             "Step-gated micro-change protocol for coding agents: propose, "
-            "approve, execute, verify — one small step at a time. stepgate "
+            "approve, execute, verify - one small step at a time. stepgate "
             "structures the flow; it never blocks your code, your commits, "
             "or your git."
         ),
@@ -44,29 +44,29 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("show", help="show the active proposal rendered as prose")
     _add_session_flags(p)
 
-    p = sub.add_parser("approve", help="PENDING → APPROVED")
+    p = sub.add_parser("approve", help="PENDING -> APPROVED")
     p.add_argument("--adjust", action="store_true", help="approve with an adjusted/reduced scope")
     p.add_argument("--scope", help="comma-separated adjusted scope (files/areas)")
     p.add_argument("--note", help="note describing the adjustment")
     _add_session_flags(p)
 
-    p = sub.add_parser("reject", help="PENDING → REJECTED")
+    p = sub.add_parser("reject", help="PENDING -> REJECTED")
     p.add_argument("--note", required=True, help="reason for rejection")
     _add_session_flags(p)
 
-    p = sub.add_parser("exec-log", help="APPROVED → EXECUTED (consolidated summary)")
+    p = sub.add_parser("exec-log", help="APPROVED -> EXECUTED (consolidated summary)")
     p.add_argument("--summary", required=True, help="what was done, consolidated")
     p.add_argument("--files", help="comma-separated files that were touched")
     _add_session_flags(p)
 
-    p = sub.add_parser("verify", help="EXECUTED → VERIFIED")
+    p = sub.add_parser("verify", help="EXECUTED -> VERIFIED")
     p.add_argument("--evidence", required=True, help="tests/runs/evidence demonstrating the result")
     _add_session_flags(p)
 
-    p = sub.add_parser("close", help="VERIFIED → CLOSED")
+    p = sub.add_parser("close", help="VERIFIED -> CLOSED")
     _add_session_flags(p)
 
-    p = sub.add_parser("abandon", help="any non-terminal state → ABANDONED")
+    p = sub.add_parser("abandon", help="any non-terminal state -> ABANDONED")
     p.add_argument("--reason", required=True, help="why the proposal is being abandoned")
     _add_session_flags(p)
 
@@ -87,6 +87,15 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # Consoles with limited encodings (e.g. cp1252 on legacy Windows) must
+    # degrade output gracefully, never crash with a UnicodeEncodeError.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(errors="replace")
+            except (OSError, ValueError):
+                pass
+
     args = build_parser().parse_args(argv)
 
     from stepgate.commands import doctor, init_cmd, lifecycle, views

@@ -121,7 +121,7 @@ def cmd_init(args) -> int:
     if shutil.which("stepgate") is None:
         render.warn(
             "the 'stepgate' executable was not found on PATH from this "
-            "environment. Agents running here will not be able to call it — "
+            "environment. Agents running here will not be able to call it - "
             "check the installation (pipx install stepgate) or this "
             "environment's PATH."
         )

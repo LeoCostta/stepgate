@@ -38,8 +38,8 @@ def plan_as_prose(plan: dict[str, Any]) -> Group:
         Text(plan["why"], style="dim"),
         Text.assemble(("Touches: ", "italic"), where),
         Text(plan["how"]),
-        Text.assemble(("Expected result — ", "italic"), plan["expected_result"]),
-        Text.assemble(("Verification — ", "italic"), plan["verification"]),
+        Text.assemble(("Expected result: ", "italic"), plan["expected_result"]),
+        Text.assemble(("Verification: ", "italic"), plan["verification"]),
     ]
     spaced: list[Any] = []
     for para in paragraphs:
@@ -50,7 +50,7 @@ def plan_as_prose(plan: dict[str, Any]) -> Group:
 
 def proposal_panel(session_name: str, proposal: dict[str, Any]) -> Panel:
     title = Text.assemble(
-        ("Proposal · ", "bold"), (session_name, "bold magenta"), (" · ", "bold"),
+        ("Proposal :: ", "bold"), (session_name, "bold magenta"), (" :: ", "bold"),
         state_text(proposal["state"]),
     )
     body: list[Any] = [plan_as_prose(proposal["plan"])]
@@ -71,7 +71,7 @@ def proposal_panel(session_name: str, proposal: dict[str, Any]) -> Panel:
     if notes:
         body.append(Text(""))
         for note in notes:
-            body.append(Text(f"• {note}", style="yellow"))
+            body.append(Text(f"- {note}", style="yellow"))
     return Panel(Group(*body), title=title, title_align="left", border_style="dim")
 
 

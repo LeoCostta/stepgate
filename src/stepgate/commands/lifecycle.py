@@ -72,7 +72,7 @@ def _overlap_warnings(store: Store, current: Session) -> None:
             render.warn(
                 f"scope overlap with session '{other.name}' "
                 f"({other.proposal.state}): {', '.join(sorted(shared))}. "
-                "This is informational only — nothing is blocked."
+                "This is informational only - nothing is blocked."
             )
 
 
@@ -87,7 +87,7 @@ def _transition(store: Store, args, action: str, data: dict) -> Session:
     store.save_session(session)
     store.append_history(session.name, session.agent, action, data)
     render.info(
-        f"[bold magenta]{session.name}[/] · {action} → "
+        f"[bold magenta]{session.name}[/] :: {action} -> "
         f"[{render.STATE_STYLES.get(new_state, 'bold')}]{new_state}[/]"
     )
     return session
@@ -119,7 +119,7 @@ def cmd_propose(args) -> int:
     if session is not None and session.has_active_proposal:
         raise StepgateError(
             f"Session '{session.name}' already has an active proposal in state "
-            f"{session.proposal.state}. Close, reject, or abandon it first — "
+            f"{session.proposal.state}. Close, reject, or abandon it first - "
             "or pass --new-session to start a parallel session."
         )
     if session is None:
@@ -155,7 +155,7 @@ def cmd_approve(args) -> int:
         session.proposal.plan["where"] = data["scope"]
         store.save_session(session)
     render.info(
-        "Approval covers this micro-change only — it is not a blanket "
+        "Approval covers this micro-change only - it is not a blanket "
         "approval for the rest of the task."
     )
     return 0
@@ -210,7 +210,7 @@ def cmd_close(args) -> int:
     store.save_session(session)
     render.info(
         "Micro-change closed. Suggest the next step with 'stepgate next "
-        "--suggest \"...\"' — but do not start it without a new approved proposal."
+        "--suggest \"...\"' - but do not start it without a new approved proposal."
     )
     return 0
 
