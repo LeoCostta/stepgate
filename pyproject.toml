@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "stepgate"
+dynamic = ["version"]
+description = "A step-gated micro-change protocol CLI for coding agents: propose, approve, execute, verify — one small step at a time."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [{ name = "Leo Costta" }]
+keywords = ["cli", "coding-agents", "workflow", "claude-code", "codex", "guardrails"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = [
+    "rich>=13.0",
+    "filelock>=3.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/LeoCostta/stepgate"
+Repository = "https://github.com/LeoCostta/stepgate"
+Issues = "https://github.com/LeoCostta/stepgate/issues"
+
+[project.scripts]
+stepgate = "stepgate.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.hatch.version]
+path = "src/stepgate/__init__.py"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
