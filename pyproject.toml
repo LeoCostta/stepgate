@@ -44,5 +44,8 @@ dev = ["pytest>=8.0"]
 [tool.hatch.version]
 path = "src/stepgate/__init__.py"
 
+[tool.hatch.build.targets.sdist]
+exclude = [".stepgate", "AGENTS.md", "CLAUDE.md", ".gitignore"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
