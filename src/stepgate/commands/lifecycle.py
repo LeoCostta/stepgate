@@ -8,6 +8,8 @@ import json
 import subprocess
 from pathlib import Path
 
+from rich.text import Text
+
 from stepgate import render
 from stepgate.model import (
     APPROVED,
@@ -228,6 +230,22 @@ def cmd_abandon(args) -> int:
 def cmd_next(args) -> int:
     store = Store.find()
     session = resolve_session(store, args, active_only=False)
+    if args.suggest is None:
+        if session.pending_suggestion:
+            render.console.print(
+                Text.assemble(
+                    ("Suggested next step", "bold green"),
+                    (f" ({session.name}): ", "dim"),
+                    session.pending_suggestion,
+                )
+            )
+        else:
+            render.info(
+                f"No next-step suggestion recorded in session "
+                f"[bold magenta]{session.name}[/]. Record one with "
+                "'stepgate next --suggest \"...\"'."
+            )
+        return 0
     session.pending_suggestion = args.suggest
     store.save_session(session)
     store.append_history(session.name, session.agent, "next-suggest", {"suggestion": args.suggest})

@@ -54,7 +54,8 @@ the scope of *execution*, never the depth of *investigation*. Then:
    `stepgate exec-log --summary "..." --files "a,b"`.
 4. Verify with real evidence: `stepgate verify --evidence "npm test: 12 passed"`.
 5. After the user runs `stepgate close`, suggest (don't start) the next step:
-   `stepgate next --suggest "..."`.
+   `stepgate next --suggest "..."`. Running `stepgate next` with no `--suggest`
+   just shows the currently recorded suggestion, without changing anything.
 
 **Rules:**
 - Approval is per micro-change, never cumulative. One approval is not a blanket
@@ -68,6 +69,8 @@ the scope of *execution*, never the depth of *investigation*. Then:
   proposing, or when closing a cycle) — not as a habitual check.
 - stepgate never blocks edits, commits, or the user. It records and makes the
   flow visible; deviating from it is visible, never silent.
+- The four flow verbs accept Portuguese aliases (English stays the default):
+  `aprovar` = approve, `rejeitar` = reject, `fechar` = close, `proximo` = next.
 {END_MARKER}"""
 
 

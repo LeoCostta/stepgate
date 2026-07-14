@@ -4,51 +4,51 @@
   "created_at": "2026-07-09T05:06:04+00:00",
   "proposal": {
     "plan": {
-      "what": "Produce and validate the v0.1.0 distribution artifacts (source tarball and wheel) locally, without publishing anything yet.",
-      "why": "This is the step the previous cycle suggested, and it is the only part of the release path that needs no PyPI credentials. Validating that the package builds and installs cleanly from the wheel must happen before spending the project name on TestPyPI/PyPI, per the planning doc's publication process.",
+      "what": "Adicionar apelidos (aliases) em portugues para os quatro comandos de fluxo que o usuario mais usa no dia a dia, mantendo os nomes canonicos em ingles como padrao: 'approve' aceita tambem 'aprovar', 'reject' aceita 'rejeitar', 'close' aceita 'fechar', e 'next' aceita 'proximo'. Digitar o apelido executa exatamente o mesmo comando que o nome canonico.",
+      "why": "Segunda parte do pedido do usuario para simplificar a interface para ele e para os agentes: poder aprovar/rejeitar/fechar/ver-o-proximo no idioma dele, com ingles permanecendo o padrao. Este passo e separado da mudanca anterior (next em modo leitura, ja fechada) para manter cada micro-mudanca pequena e revisavel. Escopo deliberadamente limitado aos quatro verbos de acao que o usuario citou; os demais comandos (propose, exec-log, verify, etc.) ficam so em ingles por enquanto, ja que sao usados majoritariamente pelo agente, nao digitados pelo usuario.",
       "where": [
-        "dist/ (generated .tar.gz and .whl, git-ignored)",
-        "pyproject.toml (only if the build reveals a metadata problem)"
+        "src/stepgate/cli.py (parametro aliases nos quatro subparsers)",
+        "tests/test_cli_smoke.py (cobrir a invocacao por apelido)"
       ],
-      "how": "Install the standard tooling (build, twine), run 'python -m build' to produce the artifacts, run 'twine check dist/*' on the result, and then install the wheel into a fresh temporary virtual environment to prove it works outside this repo.",
-      "expected_result": "A dist/ directory containing stepgate-0.1.0.tar.gz and stepgate-0.1.0-py3-none-any.whl that pass twine's metadata check and install cleanly, leaving the project one token away from a TestPyPI upload.",
-      "verification": "twine check reports PASSED for both artifacts; in the temp venv, 'stepgate --version' prints 'stepgate 0.1.0' and 'stepgate init' works in a scratch directory."
+      "how": "Em cli.py, passar aliases=[...] para os add_parser correspondentes: approve -> ['aprovar'], reject -> ['rejeitar'], close -> ['fechar'], next -> ['proximo']. O argparse resolve o apelido para o mesmo dest de subcomando, entao args.command chega ao dispatcher como o nome canonico e nenhum outro codigo muda; o dicionario 'handlers' em main() continua com apenas as chaves canonicas. Sem tabela de mapeamento propria, sem novos handlers. Os apelidos aparecem automaticamente no --help. Nenhum comando existente muda de nome nem de comportamento.",
+      "expected_result": "'stepgate aprovar', 'stepgate rejeitar', 'stepgate fechar' e 'stepgate proximo' funcionam identicamente a approve/reject/close/next, incluindo as mesmas flags (ex.: 'stepgate rejeitar --note ...', 'stepgate proximo --suggest ...'). Os nomes em ingles continuam funcionando exatamente como antes. --help lista os apelidos.",
+      "verification": "Rodar a suite pytest (deve continuar verde). Novo caso: um ciclo curto usando os apelidos ('proximo' em modo leitura e 'fechar') retorna 0 e transiciona o estado igual aos canonicos. Exercicio manual: 'python -m stepgate proximo' (modo leitura) e 'python -m stepgate --help' mostrando os apelidos."
     },
     "state": "CLOSED",
-    "created_at": "2026-07-09T05:28:26+00:00",
-    "updated_at": "2026-07-09T05:38:21+00:00",
+    "created_at": "2026-07-14T00:52:40+00:00",
+    "updated_at": "2026-07-14T01:07:48+00:00",
     "events": [
       {
-        "ts": "2026-07-09T05:29:56+00:00",
+        "ts": "2026-07-14T00:53:50+00:00",
         "action": "approve",
         "data": {}
       },
       {
-        "ts": "2026-07-09T05:32:18+00:00",
+        "ts": "2026-07-14T00:55:13+00:00",
         "action": "exec-log",
         "data": {
-          "summary": "Built stepgate-0.1.0.tar.gz and .whl with python -m build; the first build shipped .stepgate/, AGENTS.md and CLAUDE.md inside the sdist, so a sdist exclude list was added to pyproject.toml and the artifacts rebuilt",
+          "summary": "Aliases PT via argparse aliases=[...]: aprovar/rejeitar/fechar/proximo. Descoberto que argparse preenche args.command com o alias digitado, entao adicionado um mapa alias->canonico em main() antes do lookup (handlers segue so com chaves canonicas). Dois testes de smoke cobrindo os quatro apelidos.",
           "files": [
-            "dist/",
-            "pyproject.toml"
+            "src/stepgate/cli.py",
+            "tests/test_cli_smoke.py"
           ],
-          "git_diff_stat": ".stepgate/history.jsonl                     |  2 ++\n .stepgate/sessions/claude-2026-07-09-1.json | 53 +++++++----------------------\n pyproject.toml                              |  3 ++\n 3 files changed, 17 insertions(+), 41 deletions(-)"
+          "git_diff_stat": ".stepgate/history.jsonl                     | 26 +++++++++++++++\n .stepgate/sessions/claude-2026-07-09-1.json | 50 ++++++++---------------------\n AGENTS.md                                   | 16 +++++++++\n CLAUDE.md                                   | 16 +++++++++\n src/stepgate/cli.py                         | 16 +++++----\n src/stepgate/commands/lifecycle.py          | 18 +++++++++++\n tests/test_cli_smoke.py                     | 43 +++++++++++++++++++++++++\n 7 files changed, 142 insertions(+), 43 deletions(-)"
         }
       },
       {
-        "ts": "2026-07-09T05:32:19+00:00",
+        "ts": "2026-07-14T00:55:28+00:00",
         "action": "verify",
         "data": {
-          "evidence": "twine check: PASSED for both artifacts; wheel installed into a fresh venv: 'stepgate --version' printed 'stepgate 0.1.0' and 'stepgate init' created .stepgate/ in a scratch dir; sdist inspected: internal state files no longer packaged"
+          "evidence": "pytest: 37 passed (2 novos testes: os quatro apelidos e o rejeitar). Manual: 'python -m stepgate proximo' roda em modo leitura; 'stepgate --help' lista approve (aprovar), reject (rejeitar), close (fechar), next (proximo). Confirmado que o diff em lifecycle.py e do ciclo anterior ainda nao commitado, nao deste."
         }
       },
       {
-        "ts": "2026-07-09T05:38:21+00:00",
+        "ts": "2026-07-14T01:07:48+00:00",
         "action": "close",
         "data": {}
       }
     ]
   },
-  "pending_suggestion": "Upload the validated dist/ artifacts to TestPyPI with twine (requires the user's test.pypi.org API token with 2FA), install from TestPyPI in a clean venv to confirm, then repeat the upload to the real PyPI",
-  "closed_proposals": 2
+  "pending_suggestion": "Atualizar a documentacao (README.md e o bloco injetado em AGENTS.md/CLAUDE.md via init) para refletir os dois ciclos: o modo leitura de 'next' (sem --suggest mostra a sugestao atual) e os apelidos em portugues aprovar/rejeitar/fechar/proximo. Hoje a doc so descreve os comandos canonicos em ingles.",
+  "closed_proposals": 7
 }

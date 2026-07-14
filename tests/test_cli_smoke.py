@@ -54,6 +54,49 @@ def test_full_cycle(project, plan_file, capsys):
     assert read_state(project).pending_suggestion is None
 
 
+def test_next_without_suggest_shows_current(project, plan_file, capsys):
+    run("propose", "--agent", "claude", "--file", str(plan_file))
+    run("next", "--agent", "claude", "--suggest", "wire SalaJogo.tsx via supabase.rpc")
+    store = Store.find(project)
+    before = len(store.read_history())
+    capsys.readouterr()
+
+    # read-only: prints the recorded suggestion, writes nothing
+    assert run("next", "--agent", "claude") == 0
+    assert "supabase.rpc" in capsys.readouterr().out
+    assert len(Store.find(project).read_history()) == before
+
+
+def test_next_without_suggest_and_none_recorded(project, plan_file, capsys):
+    run("propose", "--agent", "claude", "--file", str(plan_file))
+    capsys.readouterr()
+    assert run("next", "--agent", "claude") == 0
+    assert "No next-step suggestion" in capsys.readouterr().out
+
+
+def test_portuguese_aliases(project, plan_file, capsys):
+    run("propose", "--agent", "claude", "--file", str(plan_file))
+    # 'aprovar' == approve
+    assert run("aprovar", "--agent", "claude") == 0
+    assert read_state(project).proposal.state == "APPROVED"
+    run("exec-log", "--agent", "claude", "--summary", "done")
+    run("verify", "--agent", "claude", "--evidence", "ok")
+    # 'fechar' == close
+    assert run("fechar", "--agent", "claude") == 0
+    assert read_state(project).proposal.state == "CLOSED"
+    # 'proximo' == next: records with --suggest, reads without it
+    assert run("proximo", "--agent", "claude", "--suggest", "wire it up") == 0
+    capsys.readouterr()
+    assert run("proximo", "--agent", "claude") == 0
+    assert "wire it up" in capsys.readouterr().out
+
+
+def test_rejeitar_alias(project, plan_file):
+    run("propose", "--agent", "claude", "--file", str(plan_file))
+    assert run("rejeitar", "--agent", "claude", "--note", "abordagem errada") == 0
+    assert read_state(project).proposal.state == "REJECTED"
+
+
 def test_cannot_skip_states_via_cli(project, plan_file, capsys):
     run("propose", "--agent", "claude", "--file", str(plan_file))
     assert run("exec-log", "--agent", "claude", "--summary", "sneaky") == 1

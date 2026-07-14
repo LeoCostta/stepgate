@@ -1,0 +1,54 @@
+{
+  "session": "claude-2026-07-13-1",
+  "agent": "claude",
+  "created_at": "2026-07-14T01:00:11+00:00",
+  "proposal": {
+    "plan": {
+      "what": "Atualizar a documentacao para refletir os dois ciclos recem-feitos: (1) 'stepgate next'/'proximo' sem --suggest agora MOSTRA a sugestao registrada em vez de exigir o argumento; (2) os quatro apelidos em portugues aprovar/rejeitar/fechar/proximo, com ingles como padrao. Isso cobre tanto o README.md quanto o bloco de instrucoes que 'stepgate init' injeta em AGENTS.md/CLAUDE.md.",
+      "why": "A doc atual descreve apenas os comandos canonicos em ingles e o 'next' so no modo de gravacao, entao esta desalinhada do comportamento real da CLI. Usuarios e agentes leem o README e o bloco injetado para saber o que existe; se a doc nao menciona os apelidos nem o modo leitura, essas melhorias ficam invisiveis. Passo separado da mudanca de codigo (ja fechada/verificada) para manter cada micro-mudanca pequena.",
+      "where": [
+        "README.md (tabela de comandos e a secao do ciclo)",
+        "src/stepgate/commands/init_cmd.py (o texto do bloco de instrucoes que init injeta, se for ali que ele vive)"
+      ],
+      "how": "Primeiro localizar onde o texto do bloco injetado e definido (provavelmente uma string/constante em init_cmd.py ou um template vizinho) - investigar antes de editar. No README.md: na tabela de comandos, anotar os apelidos PT nas linhas de approve/reject/close/next (ex.: 'stepgate approve (aprovar)') e ajustar a descricao de 'next' para 'mostrar ou registrar a sugestao de proximo passo'; adicionar uma frase curta explicando que os quatro verbos aceitam apelido em portugues e que 'next' sem argumento mostra a sugestao atual. No bloco injetado: mencionar de forma sucinta que 'next' sem --suggest mostra a sugestao e que aprovar/rejeitar/fechar/proximo sao apelidos aceitos, sem inflar o bloco. Nenhuma mudanca de comportamento de codigo; apenas texto. Manter o estilo e o tom existentes de cada arquivo.",
+      "expected_result": "README.md e o bloco injetado descrevem com precisao o modo leitura de 'next' e os quatro apelidos PT, com ingles ainda apresentado como o padrao. Nenhum comando ou logica muda.",
+      "verification": "Reler os trechos editados para conferir exatidao contra o comportamento real da CLI (conferido com 'stepgate --help'). Rodar 'python -m stepgate init' num diretorio temporario de teste e inspecionar o bloco injetado gerado, confirmando que o texto novo aparece e que o AGENTS.md/CLAUDE.md deste repo nao e alterado pelo teste. Rodar pytest para garantir que nada quebrou (a suite de init cobre a idempotencia do bloco)."
+    },
+    "state": "CLOSED",
+    "created_at": "2026-07-14T01:00:11+00:00",
+    "updated_at": "2026-07-14T01:07:49+00:00",
+    "events": [
+      {
+        "ts": "2026-07-14T01:02:39+00:00",
+        "action": "approve",
+        "data": {}
+      },
+      {
+        "ts": "2026-07-14T01:03:31+00:00",
+        "action": "exec-log",
+        "data": {
+          "summary": "Documentado o modo leitura de next (sem --suggest mostra a sugestao) e os quatro apelidos PT no README (tabela + nota) e no bloco injetado por init (passo 5 + linha nas Rules).",
+          "files": [
+            "README.md",
+            "src/stepgate/commands/init_cmd.py"
+          ],
+          "git_diff_stat": ".stepgate/history.jsonl                     | 31 ++++++++++++++++++++\n .stepgate/sessions/claude-2026-07-09-1.json | 45 +++++++++++++----------------\n AGENTS.md                                   | 16 ++++++++++\n CLAUDE.md                                   | 16 ++++++++++\n README.md                                   |  6 +++-\n src/stepgate/cli.py                         | 16 ++++++----\n src/stepgate/commands/init_cmd.py           |  5 +++-\n src/stepgate/commands/lifecycle.py          | 18 ++++++++++++\n tests/test_cli_smoke.py                     | 43 +++++++++++++++++++++++++++\n 9 files changed, 163 insertions(+), 33 deletions(-)"
+        }
+      },
+      {
+        "ts": "2026-07-14T01:03:39+00:00",
+        "action": "verify",
+        "data": {
+          "evidence": "pytest: 37 passed. 'stepgate init' num dir temporario gera o bloco com as linhas novas (next sem --suggest + apelidos PT); AGENTS.md/CLAUDE.md deste repo nao foram alterados pelo teste. Texto conferido contra 'stepgate --help'."
+        }
+      },
+      {
+        "ts": "2026-07-14T01:07:49+00:00",
+        "action": "close",
+        "data": {}
+      }
+    ]
+  },
+  "pending_suggestion": null,
+  "closed_proposals": 1
+}

@@ -1,3 +1,19 @@
+# Project rules
+
+These rules are set by the project owner and bind every agent working in this
+repository, in any tool. They take precedence over convenience.
+
+1. **Commits and pushes are user-only actions.** Never run `git commit` or
+   `git push` automatically or as part of a workflow. Only do so when the user
+   explicitly asks for it in that specific instance. Leave finished work in
+   the working tree and say it is ready to commit.
+2. **Cybersecurity first.** Before any action that writes, publishes, or
+   exposes something (git, GitHub, package registries, file contents,
+   credentials), evaluate what it exposes and where it lands. Credentials and
+   tokens never enter the repository, its history, or logged command lines.
+3. **Communicate directly.** State what is needed or what happened plainly.
+   Follow the protocol below in actions, without narrating its mechanics.
+
 <!-- stepgate:start -->
 ## Micro-change protocol (stepgate)
 

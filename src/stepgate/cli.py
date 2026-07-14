@@ -44,13 +44,13 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("show", help="show the active proposal rendered as prose")
     _add_session_flags(p)
 
-    p = sub.add_parser("approve", help="PENDING -> APPROVED")
+    p = sub.add_parser("approve", aliases=["aprovar"], help="PENDING -> APPROVED")
     p.add_argument("--adjust", action="store_true", help="approve with an adjusted/reduced scope")
     p.add_argument("--scope", help="comma-separated adjusted scope (files/areas)")
     p.add_argument("--note", help="note describing the adjustment")
     _add_session_flags(p)
 
-    p = sub.add_parser("reject", help="PENDING -> REJECTED")
+    p = sub.add_parser("reject", aliases=["rejeitar"], help="PENDING -> REJECTED")
     p.add_argument("--note", required=True, help="reason for rejection")
     _add_session_flags(p)
 
@@ -63,15 +63,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--evidence", required=True, help="tests/runs/evidence demonstrating the result")
     _add_session_flags(p)
 
-    p = sub.add_parser("close", help="VERIFIED -> CLOSED")
+    p = sub.add_parser("close", aliases=["fechar"], help="VERIFIED -> CLOSED")
     _add_session_flags(p)
 
     p = sub.add_parser("abandon", help="any non-terminal state -> ABANDONED")
     p.add_argument("--reason", required=True, help="why the proposal is being abandoned")
     _add_session_flags(p)
 
-    p = sub.add_parser("next", help="record a next-step suggestion (does not open a proposal)")
-    p.add_argument("--suggest", required=True, help="the suggested next step")
+    p = sub.add_parser("next", aliases=["proximo"], help="show or record a next-step suggestion (does not open a proposal)")
+    p.add_argument("--suggest", help="the suggested next step; omit to show the current one")
     _add_session_flags(p)
 
     p = sub.add_parser("status", help="current session state + aggregated project view")
@@ -115,8 +115,12 @@ def main(argv: list[str] | None = None) -> int:
         "history": views.cmd_history,
         "doctor": doctor.cmd_doctor,
     }
+    # argparse fills args.command with the alias actually typed, so map the
+    # convenience aliases back to their canonical command name.
+    aliases = {"aprovar": "approve", "rejeitar": "reject", "fechar": "close", "proximo": "next"}
+    command = aliases.get(args.command, args.command)
     try:
-        return handlers[args.command](args)
+        return handlers[command](args)
     except StepgateError as exc:
         print(f"stepgate: error: {exc}", file=sys.stderr)
         return 1

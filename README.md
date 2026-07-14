@@ -106,7 +106,11 @@ all sessions and agents, append-only.
 | `stepgate verify --evidence "..."` | Record verification evidence |
 | `stepgate close` | Close a verified micro-change |
 | `stepgate abandon --reason "..."` | Cleanly abandon from any non-terminal state |
-| `stepgate next --suggest "..."` | Record a next-step suggestion (opens nothing) |
+| `stepgate next [--suggest "..."]` | With `--suggest`, record a next-step suggestion; without it, show the current one |
+
+The four flow verbs also accept Portuguese aliases — English stays the default:
+`aprovar` = `approve`, `rejeitar` = `reject`, `fechar` = `close`,
+`proximo` = `next`.
 | `stepgate status` | Current session + aggregated project view |
 | `stepgate history [--session X] [--since DATE]` | Append-only, cross-session log |
 | `stepgate doctor` | Report corrupted/invalid state files (fixes nothing) |

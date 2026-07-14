@@ -1,0 +1,52 @@
+{
+  "session": "claude-2026-07-13-2",
+  "agent": "claude",
+  "created_at": "2026-07-14T01:09:50+00:00",
+  "proposal": {
+    "plan": {
+      "what": "Elevar o numero de versao do pacote de 0.1.0 para 0.2.0, alterando a unica linha que o define. O arquivo src/stepgate/__init__.py contem hoje a linha '__version__ = \"0.1.0\"' e passara a conter '__version__ = \"0.2.0\"'. Nenhuma outra linha do arquivo muda, e nenhum outro arquivo e tocado por esta micro-mudanca — o pyproject.toml ja le a versao dinamicamente dessa constante (tool.hatch.version aponta para src/stepgate/__init__.py), entao o bump se propaga sozinho para o build e para os metadados do pacote.",
+      "why": "A versao 0.1.0 ja esta publicada no PyPI e o indice nao permite sobrescrever uma versao existente; um novo upload de 0.1.0 seria rejeitado. Os dois ciclos recem-fechados introduziram comportamento novo e compativel com as versoes anteriores — o comando 'next'/'proximo' agora funciona sem o argumento --suggest (modo leitura) e os quatro verbos de fluxo ganharam apelidos em portugues. Por semver, adicao de funcionalidade retrocompativel pede incremento de minor, portanto 0.2.0. Este bump precisa existir antes de qualquer novo build ou publicacao para que o artefato carregue o numero correto e o upload ao PyPI seja aceito.",
+      "where": [
+        "src/stepgate/__init__.py — a linha __version__, unica alteracao desta micro-mudanca"
+      ],
+      "how": "Editar src/stepgate/__init__.py substituindo exatamente a string '0.1.0' por '0.2.0' na atribuicao de __version__, preservando aspas, espacamento e o restante do arquivo. Como o hatchling deriva a versao dessa constante, nenhuma edicao em pyproject.toml e necessaria nem desejada. Depois confirmar que a CLI reporta a nova versao.",
+      "expected_result": "A constante __version__ passa a valer '0.2.0'. 'python -m stepgate --version' imprime 'stepgate 0.2.0'. O proximo 'python -m build' produzira artefatos nomeados stepgate-0.2.0 (wheel e sdist), aptos a serem enviados ao PyPI sem colisao com a 0.1.0 ja publicada.",
+      "verification": "Rodar 'python -m stepgate --version' e conferir que imprime exatamente 'stepgate 0.2.0'. Rodar a suite pytest para garantir que nada quebrou com a mudanca de constante (37 testes atuais devem seguir verdes). O build e o upload ao PyPI nao fazem parte desta micro-mudanca — sao passos seguintes, apos commit e push."
+    },
+    "state": "CLOSED",
+    "created_at": "2026-07-14T01:09:50+00:00",
+    "updated_at": "2026-07-14T01:11:00+00:00",
+    "events": [
+      {
+        "ts": "2026-07-14T01:10:32+00:00",
+        "action": "approve",
+        "data": {}
+      },
+      {
+        "ts": "2026-07-14T01:10:52+00:00",
+        "action": "exec-log",
+        "data": {
+          "summary": "Bump de versao 0.1.0 -> 0.2.0 na constante __version__.",
+          "files": [
+            "src/stepgate/__init__.py"
+          ],
+          "git_diff_stat": ".stepgate/history.jsonl                     | 37 +++++++++++++++++++++++++\n .stepgate/sessions/claude-2026-07-09-1.json | 40 +++++++++++++--------------\n AGENTS.md                                   | 16 +++++++++++\n CLAUDE.md                                   | 16 +++++++++++\n README.md                                   |  6 +++-\n src/stepgate/__init__.py                    |  2 +-\n src/stepgate/cli.py                         | 16 +++++++----\n src/stepgate/commands/init_cmd.py           |  5 +++-\n src/stepgate/commands/lifecycle.py          | 18 ++++++++++++\n tests/test_cli_smoke.py                     | 43 +++++++++++++++++++++++++++++\n 10 files changed, 170 insertions(+), 29 deletions(-)"
+        }
+      },
+      {
+        "ts": "2026-07-14T01:10:52+00:00",
+        "action": "verify",
+        "data": {
+          "evidence": "python -m stepgate --version imprime 'stepgate 0.2.0'; pytest: 37 passed."
+        }
+      },
+      {
+        "ts": "2026-07-14T01:11:00+00:00",
+        "action": "close",
+        "data": {}
+      }
+    ]
+  },
+  "pending_suggestion": null,
+  "closed_proposals": 1
+}
