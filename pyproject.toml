@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "stepgate"
 dynamic = ["version"]
-description = "A step-gated micro-change protocol CLI for coding agents: propose, approve, execute, verify — one small step at a time."
+description = "A step-gated micro-change protocol CLI for coding agents: propose, approve, execute, verify - one small step at a time."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
