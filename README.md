@@ -6,18 +6,18 @@
 
 **A step-gated micro-change protocol for coding agents.**
 
-Coding agents (Claude Code, Codex, …) working on large or loosely-scoped tasks
+Coding agents (Claude Code, Codex, ...) working on large or loosely-scoped tasks
 tend to mix contexts, silently expand scope, touch files unrelated to the
 original request, or declare success without real evidence. `stepgate` makes
-the correct workflow — investigate, propose, wait for approval, execute only
-what was approved, verify, suggest the next step — **the single natural path
+the correct workflow - investigate, propose, wait for approval, execute only
+what was approved, verify, suggest the next step - **the single natural path
 of action**, so that deviating from it is visible and recorded, never silent.
 
 `stepgate` is *not* an enforcement tool. It never blocks your code, your
 editor, your commits, or git. You can always edit anything, commit anything,
 and cancel any agent session at any time. What it gives you is structure and
 an honest, append-only trail of what was proposed, approved, executed, and
-verified — across every agent working on the repo, even concurrently.
+verified - across every agent working on the repo, even concurrently.
 
 ## Install
 
@@ -35,7 +35,7 @@ stepgate init
 This creates `.stepgate/` (state + append-only history) and injects an
 instruction block into `AGENTS.md`/`CLAUDE.md` telling agents to use the
 protocol. It is idempotent and never overwrites anything you wrote in those
-files — only the text between its own markers is ever touched. If your
+files - only the text between its own markers is ever touched. If your
 project already has a domain guardrails document, point to it with
 `--guardrails GUARDRAILS.md` and the generated block will reference it.
 
@@ -45,9 +45,9 @@ Every micro-change is a proposal moving through a state machine, validated by
 the CLI itself:
 
 ```
-PENDING ──approve──► APPROVED ──exec-log──► EXECUTED ──verify──► VERIFIED ──close──► CLOSED
-   │
-   └─reject──► REJECTED          (any non-terminal state) ──abandon──► ABANDONED
+PENDING --approve--> APPROVED --exec-log--> EXECUTED --verify--> VERIFIED --close--> CLOSED
+   |
+   +--reject--> REJECTED          (any non-terminal state) --abandon--> ABANDONED
 ```
 
 A proposal covers six points, each written as natural flowing prose (not a
@@ -59,7 +59,7 @@ back to the user in flowing prose before execution, not only inside the CLI
 panel.
 
 Key rule: *a micro-change reduces the scope of execution, never the depth of
-investigation* — the agent still investigates everything it needs to
+investigation* - the agent still investigates everything it needs to
 understand before proposing, even if it will only implement a small piece.
 
 ## A real cycle
@@ -86,7 +86,7 @@ stepgate exec-log --summary "atomic decrement migration + typing" --files "migra
 stepgate verify --evidence "type-check ok, simulated concurrency test passed"
 ```
 
-You close the cycle; the agent suggests — but does not start — the next step:
+You close the cycle; the agent suggests - but does not start - the next step:
 
 ```bash
 stepgate close
@@ -96,7 +96,7 @@ stepgate next --suggest "wire SalaJogo.tsx to the new function via supabase.rpc(
 The suggestion stays visible in `stepgate status` until a new proposal is
 opened. Running `stepgate next` with no `--suggest` only shows the currently
 recorded suggestion; it does not create or change one. The full trail lives in
-`stepgate history` — chronological, across
+`stepgate history` - chronological, across
 all sessions and agents, append-only.
 
 ## Commands
@@ -114,7 +114,7 @@ all sessions and agents, append-only.
 | `stepgate abandon --reason "..."` | Cleanly abandon from any non-terminal state |
 | `stepgate next [--suggest "..."]` | With `--suggest`, record a next-step suggestion; without it, show the current one |
 
-The four flow verbs also accept Portuguese aliases — English stays the default:
+The four flow verbs also accept Portuguese aliases - English stays the default:
 `aprovar` = `approve`, `rejeitar` = `reject`, `fechar` = `close`,
 `proximo` = `next`.
 | `stepgate status` | Current session + aggregated project view |
@@ -122,9 +122,9 @@ The four flow verbs also accept Portuguese aliases — English stays the default
 | `stepgate doctor` | Report corrupted/invalid state files (fixes nothing) |
 
 Multiple agents can work concurrently: each session has its own state file
-(`.stepgate/sessions/claude-2026-07-09-1.json` — human-readable names, not
-hashes), writes are file-locked, and `propose`/`status` warn — informationally,
-never blockingly — when two active proposals touch the same files.
+(`.stepgate/sessions/claude-2026-07-09-1.json` - human-readable names, not
+hashes), writes are file-locked, and `propose`/`status` warn - informationally,
+never blockingly - when two active proposals touch the same files.
 
 ## Design principles
 
@@ -136,8 +136,8 @@ never blockingly — when two active proposals touch the same files.
   identically in a terminal, a desktop app, or an IDE side-panel extension.
 - **Structure when you opt in.** Editing code without a proposal is a
   legitimate flow, not an error. The state machine gives shape to the agent
-  workflow — it is never a requirement for the code to change.
+  workflow - it is never a requirement for the code to change.
 
 ## License
 
-[MIT](LICENSE) © Leo Costta
+[MIT](LICENSE) (c) Leo Costta

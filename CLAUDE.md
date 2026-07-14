@@ -18,17 +18,17 @@ repository, in any tool. They take precedence over convenience.
 ## Micro-change protocol (stepgate)
 
 This project uses `stepgate`, a CLI that structures work into small, approved
-steps. It is your toolset for proposing and executing changes — the commands
+steps. It is your toolset for proposing and executing changes - the commands
 below are the only legitimate channel for that flow.
 
-**When it applies:** any change to code or behavior — implementation, bug fixes
+**When it applies:** any change to code or behavior - implementation, bug fixes
 that edit code, refactoring, contract/schema changes. It does NOT apply to
 read-only work: investigating, explaining, diagnosing without editing.
 
-**The cycle.** Investigate as deeply as you need first — a micro-change reduces
+**The cycle.** Investigate as deeply as you need first - a micro-change reduces
 the scope of *execution*, never the depth of *investigation*. Then:
 
-1. `stepgate propose --agent <your-name> --file plan.json` — a JSON object with
+1. `stepgate propose --agent <your-name> --file plan.json` - a JSON object with
    six fields (`what`, `why`, `where`, `how`, `expected_result`,
    `verification`), each written as natural, flowing prose (where is a list of
    files/areas). State becomes PENDING. After proposing, bring those same six
@@ -53,7 +53,7 @@ the scope of *execution*, never the depth of *investigation*. Then:
 - If a proposal becomes obsolete, close it out explicitly:
   `stepgate abandon --reason "..."`.
 - Run `stepgate status`/`history` only when you actually need them (when
-  proposing, or when closing a cycle) — not as a habitual check.
+  proposing, or when closing a cycle) - not as a habitual check.
 - stepgate never blocks edits, commits, or the user. It records and makes the
   flow visible; deviating from it is visible, never silent.
 <!-- stepgate:end -->
