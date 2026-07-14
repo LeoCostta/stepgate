@@ -1,6 +1,6 @@
 # stepgate
 
-[![PyPI version](https://img.shields.io/pypi/v/stepgate)](https://pypi.org/project/stepgate/)
+[![PyPI version](https://badge.fury.io/py/stepgate.svg)](https://pypi.org/project/stepgate/)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://pypi.org/project/stepgate/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -54,6 +54,9 @@ A proposal covers six points, each written as natural flowing prose (not a
 telegraphic form): **what** will change now, **why** this step comes first,
 **where** (files/contracts/flows touched), **how** it will be implemented,
 the **expected result**, and the **verification** that will demonstrate it.
+When an agent proposes a micro-change, it must also present those six points
+back to the user in flowing prose before execution, not only inside the CLI
+panel.
 
 Key rule: *a micro-change reduces the scope of execution, never the depth of
 investigation* — the agent still investigates everything it needs to
@@ -67,7 +70,8 @@ You ask your agent to fix a race condition. It investigates, then proposes:
 stepgate propose --agent claude --file plan.json
 ```
 
-You read it rendered as prose, and approve with a tweak:
+The agent brings that proposal back to you in prose, you can inspect the same
+content in the CLI, and then you approve with a tweak:
 
 ```bash
 stepgate show
@@ -90,7 +94,9 @@ stepgate next --suggest "wire SalaJogo.tsx to the new function via supabase.rpc(
 ```
 
 The suggestion stays visible in `stepgate status` until a new proposal is
-opened. The full trail lives in `stepgate history` — chronological, across
+opened. Running `stepgate next` with no `--suggest` only shows the currently
+recorded suggestion; it does not create or change one. The full trail lives in
+`stepgate history` — chronological, across
 all sessions and agents, append-only.
 
 ## Commands

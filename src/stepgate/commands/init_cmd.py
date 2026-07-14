@@ -46,8 +46,10 @@ the scope of *execution*, never the depth of *investigation*. Then:
 1. `stepgate propose --agent <your-name> --file plan.json` — a JSON object with
    six fields (`what`, `why`, `where`, `how`, `expected_result`,
    `verification`), each written as natural, flowing prose (where is a list of
-   files/areas). State becomes PENDING. Always pass `--agent` (e.g. `claude`,
-   `codex`) so sessions stay readable.
+   files/areas). State becomes PENDING. After proposing, bring those same six
+   points back to the user in flowing prose before execution, not only inside
+   the CLI panel. Always pass `--agent` (e.g. `claude`, `codex`) so sessions
+   stay readable.
 2. Wait for the user to run `stepgate approve` (possibly `--adjust`) or
    `stepgate reject`. Never execute a PENDING proposal.
 3. Execute **only** what was approved, then record it:

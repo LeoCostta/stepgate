@@ -1,0 +1,58 @@
+{
+  "session": "codex-2026-07-13-1",
+  "agent": "codex",
+  "created_at": "2026-07-14T01:22:31+00:00",
+  "proposal": {
+    "plan": {
+      "what": "Update the public documentation and the injected agent instruction block so they explicitly require the agent to present each micro-change proposal to the user in natural prose, and so they explain that 'stepgate next' without '--suggest' only reads the currently recorded suggestion instead of creating one.",
+      "why": "The current behavior already treats 'next' without '--suggest' as a read-only command, but the docs leave room for confusion. The user also wants the protocol to require that agents bring the micro-step details back in prose, not only inside the CLI panel, so the written guidance needs to match that expectation.",
+      "where": [
+        "README.md",
+        "src/stepgate/commands/init_cmd.py",
+        "AGENTS.md",
+        "CLAUDE.md"
+      ],
+      "how": "Revise the README cycle and command descriptions, plus the generated stepgate instruction block in init_cmd.py, to spell out both rules in plain language. Then refresh the checked-in AGENTS.md and CLAUDE.md blocks so the repository documentation matches what 'stepgate init' will inject going forward.",
+      "expected_result": "The docs will clearly say that agents must present the six proposal fields to the user in flowing prose, and that 'stepgate next' without '--suggest' only displays the current suggestion while '--suggest' records a new one.",
+      "verification": "Review the diff and run text searches confirming the updated docs mention the prose requirement and the read-only behavior of 'stepgate next' without '--suggest' in all affected files."
+    },
+    "state": "CLOSED",
+    "created_at": "2026-07-14T01:34:19+00:00",
+    "updated_at": "2026-07-14T01:45:45+00:00",
+    "events": [
+      {
+        "ts": "2026-07-14T01:36:51+00:00",
+        "action": "approve",
+        "data": {}
+      },
+      {
+        "ts": "2026-07-14T01:41:50+00:00",
+        "action": "exec-log",
+        "data": {
+          "summary": "aligned the docs so agents must present micro-change proposals back to the user in flowing prose and so stepgate next without --suggest is documented as read-only",
+          "files": [
+            "README.md",
+            "src/stepgate/commands/init_cmd.py",
+            "AGENTS.md",
+            "CLAUDE.md"
+          ],
+          "git_diff_stat": ".stepgate/history.jsonl           |  7 +++++++\n AGENTS.md                         |  9 ++++++---\n CLAUDE.md                         |  9 ++++++---\n README.md                         | 12 +++++++++---\n src/stepgate/commands/init_cmd.py |  6 ++++--\n 5 files changed, 32 insertions(+), 11 deletions(-)"
+        }
+      },
+      {
+        "ts": "2026-07-14T01:41:55+00:00",
+        "action": "verify",
+        "data": {
+          "evidence": "Diff review confirms README.md, AGENTS.md, CLAUDE.md, and src/stepgate/commands/init_cmd.py now state that agents must bring the six proposal fields back to the user in flowing prose, and that 'stepgate next' without '--suggest' only shows the current suggestion without changing it."
+        }
+      },
+      {
+        "ts": "2026-07-14T01:45:45+00:00",
+        "action": "close",
+        "data": {}
+      }
+    ]
+  },
+  "pending_suggestion": "normalizar os textos mojibake no README e no bloco injetado para UTF-8 limpo, mantendo a documentacao ja alinhada com a regra de prosa e o comportamento de next",
+  "closed_proposals": 2
+}

@@ -31,15 +31,18 @@ the scope of *execution*, never the depth of *investigation*. Then:
 1. `stepgate propose --agent <your-name> --file plan.json` — a JSON object with
    six fields (`what`, `why`, `where`, `how`, `expected_result`,
    `verification`), each written as natural, flowing prose (where is a list of
-   files/areas). State becomes PENDING. Always pass `--agent` (e.g. `claude`,
-   `codex`) so sessions stay readable.
+   files/areas). State becomes PENDING. After proposing, bring those same six
+   points back to the user in flowing prose before execution, not only inside
+   the CLI panel. Always pass `--agent` (e.g. `claude`, `codex`) so sessions
+   stay readable.
 2. Wait for the user to run `stepgate approve` (possibly `--adjust`) or
    `stepgate reject`. Never execute a PENDING proposal.
 3. Execute **only** what was approved, then record it:
    `stepgate exec-log --summary "..." --files "a,b"`.
 4. Verify with real evidence: `stepgate verify --evidence "npm test: 12 passed"`.
 5. After the user runs `stepgate close`, suggest (don't start) the next step:
-   `stepgate next --suggest "..."`.
+   `stepgate next --suggest "..."`. Running `stepgate next` with no `--suggest`
+   just shows the currently recorded suggestion, without changing anything.
 
 **Rules:**
 - Approval is per micro-change, never cumulative. One approval is not a blanket
