@@ -19,6 +19,17 @@ from stepgate.model import CorruptStateError, Session, StepgateError, now_iso
 
 STEPGATE_DIR = ".stepgate"
 SESSION_NAME_RE = re.compile(r"^(?P<agent>.+)-(?P<date>\d{4}-\d{2}-\d{2})-(?P<seq>\d+)$")
+SAFE_NAME_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
+
+
+def _validate_name(value: str, *, label: str) -> str:
+    """Reject values that could escape sessions_dir when used in a path."""
+    if not SAFE_NAME_RE.match(value) or ".." in value:
+        raise StepgateError(
+            f"Invalid {label} '{value}': must contain only letters, digits, "
+            "'.', '-', and '_', with no path separators or '..' segments."
+        )
+    return value
 
 DEFAULT_CONFIG = {
     "project_name": "",
@@ -81,6 +92,7 @@ class Store:
     # -- sessions ----------------------------------------------------------
 
     def session_path(self, name: str) -> Path:
+        _validate_name(name, label="session name")
         return self.sessions_dir / f"{name}.json"
 
     def load_session(self, name: str) -> Session:
@@ -115,6 +127,7 @@ class Store:
 
     def new_session_name(self, agent: str) -> str:
         """Allocate the next human-readable session name for today."""
+        _validate_name(agent, label="agent name")
         today = date.today().isoformat()
         prefix = f"{agent}-{today}-"
         seqs = [
@@ -125,6 +138,7 @@ class Store:
         return f"{prefix}{max(seqs, default=0) + 1}"
 
     def latest_session_for_agent(self, agent: str) -> Session | None:
+        _validate_name(agent, label="agent name")
         paths = sorted(
             (p for p in self.sessions_dir.glob(f"{agent}-*.json")
              if (m := SESSION_NAME_RE.match(p.stem)) and m.group("agent") == agent),

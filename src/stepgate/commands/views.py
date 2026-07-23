@@ -13,6 +13,18 @@ from stepgate.model import APPROVED, PENDING, StepgateError, TERMINAL_STATES
 from stepgate.store import Store
 
 
+def _plan_snippet(plan, limit: int = 80) -> str:
+    """A short one-line summary of a plan for the history table.
+
+    Uses the new ``narrative`` field, falling back to the legacy ``what``.
+    """
+    if not isinstance(plan, dict):
+        return ""
+    text = plan.get("narrative") or plan.get("what") or ""
+    text = " ".join(text.split())
+    return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
+
+
 def cmd_show(args) -> int:
     store = Store.find()
     session = resolve_session(store, args, active_only=False)
@@ -121,7 +133,7 @@ def cmd_history(args) -> int:
         detail = (
             data.get("summary") or data.get("evidence") or data.get("note")
             or data.get("reason") or data.get("suggestion")
-            or (data.get("plan", {}).get("what") if isinstance(data.get("plan"), dict) else "")
+            or _plan_snippet(data.get("plan"))
             or ""
         )
         table.add_row(entry["ts"], entry["session"], entry["event"], detail)

@@ -29,20 +29,30 @@ read-only work: investigating, explaining, diagnosing without editing.
 the scope of *execution*, never the depth of *investigation*. Then:
 
 1. `stepgate propose --agent <your-name> --file plan.json` - a JSON object with
-   six fields (`what`, `why`, `where`, `how`, `expected_result`,
-   `verification`), each written as natural, flowing prose (where is a list of
-   files/areas). State becomes PENDING. After proposing, bring those same six
-   points back to the user in flowing prose before execution, not only inside
-   the CLI panel. Always pass `--agent` (e.g. `claude`, `codex`) so sessions
-   stay readable.
+   two fields: `narrative` and `where`. `narrative` is the whole proposal
+   written as one continuous, readable piece of prose - what you'll do, why,
+   how, what changes as a result, and how you'll verify it - flowing as a
+   human would explain it, not as labelled form fields. `where` is a list of
+   the files/areas it touches (it drives scope-overlap detection and
+   `--adjust --scope`, so keep it as a real list). State becomes PENDING.
+   After proposing, bring that same narrative back to the user in prose before
+   execution, not only inside the CLI panel. Always pass `--agent` (e.g.
+   `claude`, `codex`) so sessions stay readable.
 2. Wait for the user to run `stepgate approve` (possibly `--adjust`) or
    `stepgate reject`. Never execute a PENDING proposal.
 3. Execute **only** what was approved, then record it:
    `stepgate exec-log --summary "..." --files "a,b"`.
-4. Verify with real evidence: `stepgate verify --evidence "npm test: 12 passed"`.
-5. After the user runs `stepgate close`, suggest (don't start) the next step:
-   `stepgate next --suggest "..."`. Running `stepgate next` with no `--suggest`
-   just shows the currently recorded suggestion, without changing anything.
+4. Verify with real evidence, and record this cycle's natural next step at the
+   same time: `stepgate verify --evidence "npm test: 12 passed" --suggest "..."`.
+5. `stepgate close` closes a verified cycle and surfaces the next step you
+   recorded at verify time. Closing is deliberate: VERIFIED cycles simply queue
+   up until closed, and never block opening the next proposal.
+6. `stepgate next --suggest "..."` records a *different* next step than the one
+   close would surface - an alternative direction. It does not require close and
+   does not open a proposal. With no `--suggest` it just shows the current one.
+7. `stepgate exit` ends the working session: it suggests nothing, lists the
+   VERIFIED cycles still awaiting close, and asks the user which (if any) to
+   close - it never closes anything on its own.
 
 **Rules:**
 - Approval is per micro-change, never cumulative. One approval is not a blanket

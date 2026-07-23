@@ -14,6 +14,7 @@ from stepgate import render
 from stepgate.model import (
     APPROVED,
     PENDING,
+    VERIFIED,
     Proposal,
     Session,
     StepgateError,
@@ -201,19 +202,40 @@ def cmd_exec_log(args) -> int:
 
 def cmd_verify(args) -> int:
     store = Store.find()
-    _transition(store, args, "verify", {"evidence": args.evidence})
+    session = _transition(store, args, "verify", {"evidence": args.evidence})
+    suggest = getattr(args, "suggest", None)
+    if suggest:
+        session.pending_suggestion = suggest
+        store.save_session(session)
+        store.append_history(session.name, session.agent, "next-suggest", {"suggestion": suggest})
     return 0
 
 
 def cmd_close(args) -> int:
     store = Store.find()
+    suggestion = None
+    session = resolve_session(store, args)
+    if session.pending_suggestion:
+        suggestion = session.pending_suggestion
     session = _transition(store, args, "close", {})
     session.closed_proposals += 1
     store.save_session(session)
-    render.info(
-        "Micro-change closed. Suggest the next step with 'stepgate next "
-        "--suggest \"...\"' - but do not start it without a new approved proposal."
-    )
+    if suggestion:
+        render.console.print(
+            Text.assemble(
+                ("Micro-change closed. Recorded next step: ", "bold green"),
+                suggestion,
+            )
+        )
+        render.info(
+            "Do not start it without a new approved proposal. Use 'stepgate "
+            "next --suggest \"...\"' to record a different next step instead."
+        )
+    else:
+        render.info(
+            "Micro-change closed. Record the next step with 'stepgate next "
+            "--suggest \"...\"' - but do not start it without a new approved proposal."
+        )
     return 0
 
 
@@ -253,4 +275,44 @@ def cmd_next(args) -> int:
         f"Next-step suggestion recorded in session [bold magenta]{session.name}[/]. "
         "It will stay visible in 'stepgate status' until a new proposal is opened."
     )
+    return 0
+
+
+def cmd_exit(args) -> int:
+    """End the working session. Suggests nothing; surfaces the queue of
+    VERIFIED cycles awaiting close and leaves the decision to the user.
+
+    stepgate never closes anything here - closing stays deliberate. It records
+    an 'exit' event and prints a farewell; the agent reads this and ends its
+    own turn.
+    """
+    store = Store.find()
+    pending = [
+        s for s in store.iter_sessions()
+        if s.proposal is not None and s.proposal.state == VERIFIED
+    ]
+    store.append_history(
+        getattr(args, "session", None) or getattr(args, "agent", None) or "-",
+        getattr(args, "agent", None) or "-",
+        "exit",
+        {"verified_awaiting_close": [s.name for s in pending]},
+    )
+    if pending:
+        lines = "\n".join(
+            f"  - {s.name}"
+            + (f" (next: {s.pending_suggestion})" if s.pending_suggestion else "")
+            for s in pending
+        )
+        render.console.print(
+            Text.assemble(
+                ("Exiting. These VERIFIED cycles are still awaiting close:\n", "bold yellow"),
+                lines,
+            )
+        )
+        render.info(
+            "Close any or all of them with 'stepgate close --session <name>' - "
+            "or leave them queued for later. Nothing is closed automatically."
+        )
+    else:
+        render.info("Exiting. No VERIFIED cycles are awaiting close.")
     return 0

@@ -61,9 +61,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("verify", help="EXECUTED -> VERIFIED")
     p.add_argument("--evidence", required=True, help="tests/runs/evidence demonstrating the result")
+    p.add_argument("--suggest", help="the natural next step for this cycle; 'close' surfaces it when the cycle is closed")
     _add_session_flags(p)
 
-    p = sub.add_parser("close", aliases=["fechar"], help="VERIFIED -> CLOSED")
+    p = sub.add_parser("close", aliases=["fechar"], help="VERIFIED -> CLOSED (surfaces the cycle's recorded next step)")
     _add_session_flags(p)
 
     p = sub.add_parser("abandon", help="any non-terminal state -> ABANDONED")
@@ -82,6 +83,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--since", help="filter by ISO date (e.g. 2026-07-09)")
 
     sub.add_parser("doctor", help="scan .stepgate/ and report problems (never fixes anything)")
+
+    p = sub.add_parser("exit", aliases=["sair"], help="end the working session: list VERIFIED cycles awaiting close, suggest nothing")
+    _add_session_flags(p)
 
     return parser
 
@@ -114,10 +118,14 @@ def main(argv: list[str] | None = None) -> int:
         "status": views.cmd_status,
         "history": views.cmd_history,
         "doctor": doctor.cmd_doctor,
+        "exit": lifecycle.cmd_exit,
     }
     # argparse fills args.command with the alias actually typed, so map the
     # convenience aliases back to their canonical command name.
-    aliases = {"aprovar": "approve", "rejeitar": "reject", "fechar": "close", "proximo": "next"}
+    aliases = {
+        "aprovar": "approve", "rejeitar": "reject", "fechar": "close",
+        "proximo": "next", "sair": "exit",
+    }
     command = aliases.get(args.command, args.command)
     try:
         return handlers[command](args)

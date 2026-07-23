@@ -1,0 +1,48 @@
+{
+  "session": "claude-2026-07-22-1",
+  "agent": "claude",
+  "created_at": "2026-07-23T00:42:07+00:00",
+  "proposal": {
+    "plan": {
+      "narrative": "Vamos preparar o release 0.2.2 do stepgate para consolidar tudo que fizemos nesta sessao, porque as mudancas ja estao no working tree mas a versao publicada no PyPI (0.2.1) e as instalacoes globais existentes ainda nao tem nem a correcao de seguranca do path traversal em --agent/--session, nem o novo schema de proposta em narrativa. O bump em si e a unica coisa desta micro-mudanca: alterar __version__ de 0.2.1 para 0.2.2 em src/stepgate/__init__.py, que e o ponto unico de verdade da versao conforme [tool.hatch.version] no pyproject.toml. A partir dai a versao passa a marcar um release que contem tanto a barreira de validacao de nomes quanto o schema narrative+where. Nao mexo em nenhum outro arquivo aqui, e deixo deliberadamente de fora o build e o upload pro PyPI: publicar e uma acao irreversivel que afeta um pacote publico, entao isso fica para um passo seguinte separado, com confirmacao explicita antes de qualquer twine upload. Vou confirmar a mudanca importando o pacote a partir do source (PYTHONPATH=src) e checando que stepgate.__version__ imprime 0.2.2, alem de rodar a suite de testes pra garantir que nada dependia do numero de versao anterior.",
+      "where": [
+        "src/stepgate/__init__.py"
+      ]
+    },
+    "state": "CLOSED",
+    "created_at": "2026-07-23T00:42:07+00:00",
+    "updated_at": "2026-07-23T01:06:01+00:00",
+    "events": [
+      {
+        "ts": "2026-07-23T01:05:52+00:00",
+        "action": "approve",
+        "data": {}
+      },
+      {
+        "ts": "2026-07-23T01:05:52+00:00",
+        "action": "exec-log",
+        "data": {
+          "summary": "Bump 0.2.1 -> 0.2.2 em src/stepgate/__init__.py",
+          "files": [
+            "src/stepgate/__init__.py"
+          ],
+          "git_diff_stat": ".stepgate/history.jsonl                     | 26 +++++++++++\n .stepgate/sessions/claude-2026-07-13-2.json | 51 +++++++++++---------\n AGENTS.md                                   | 30 ++++++++----\n CLAUDE.md                                   | 30 ++++++++----\n README.md                                   | 53 ++++++++++++---------\n src/stepgate/__init__.py                    |  2 +-\n src/stepgate/cli.py                         | 12 ++++-\n src/stepgate/commands/init_cmd.py           | 34 +++++++++-----\n src/stepgate/commands/lifecycle.py          | 72 +++++++++++++++++++++++++++--\n src/stepgate/commands/views.py              | 14 +++++-\n src/stepgate/model.py                       | 24 +++++-----\n src/stepgate/render.py                      | 29 ++++++++----\n src/stepgate/store.py                       | 14 ++++++\n tests/conftest.py                           | 13 ++++--\n tests/test_cli_smoke.py                     |  7 +--\n 15 files changed, 296 insertions(+), 115 deletions(-)"
+        }
+      },
+      {
+        "ts": "2026-07-23T01:05:53+00:00",
+        "action": "verify",
+        "data": {
+          "evidence": "stepgate.__version__ = 0.2.2; CLI --version reporta stepgate 0.2.2; pytest 37 passed apos o bump."
+        }
+      },
+      {
+        "ts": "2026-07-23T01:06:01+00:00",
+        "action": "close",
+        "data": {}
+      }
+    ]
+  },
+  "pending_suggestion": null,
+  "closed_proposals": 1
+}

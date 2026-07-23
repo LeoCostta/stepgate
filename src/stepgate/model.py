@@ -31,16 +31,16 @@ TRANSITIONS = {
     "close": (VERIFIED, CLOSED),
 }
 
-PLAN_FIELDS = ("what", "why", "where", "how", "expected_result", "verification")
+PLAN_FIELDS = ("narrative", "where")
 
 PLAN_FIELD_LABELS = {
-    "what": "What",
-    "why": "Why",
+    "narrative": "Narrative",
     "where": "Where",
-    "how": "How",
-    "expected_result": "Expected result",
-    "verification": "Verification",
 }
+
+# The legacy six-field schema, kept only so already-saved sessions written in
+# that format stay readable. New proposals never use it.
+LEGACY_PLAN_FIELDS = ("what", "why", "where", "how", "expected_result", "verification")
 
 
 class StepgateError(Exception):
@@ -60,10 +60,11 @@ def now_iso() -> str:
 
 
 def validate_plan(raw: Any) -> dict[str, Any]:
-    """Validate a plan document: all six fields present and non-empty.
+    """Validate a plan document: a flowing ``narrative`` plus a ``where`` list.
 
-    ``where`` may be a list of files/areas or a comma-separated string;
-    it is normalized to a list. All other fields are free-flowing prose.
+    ``narrative`` is the proposal written as continuous, readable prose.
+    ``where`` may be a list of files/areas or a comma-separated string; it is
+    normalized to a list and drives scope-overlap detection and --adjust scope.
     """
     if not isinstance(raw, dict):
         raise StepgateError("The plan file must contain a JSON object.")
@@ -87,9 +88,8 @@ def validate_plan(raw: Any) -> dict[str, Any]:
         raise StepgateError(
             "The plan is missing required fields: "
             + ", ".join(missing)
-            + ". A micro-change plan must cover all six points "
-            "(what, why, where, how, expected_result, verification) "
-            "written as natural, flowing prose."
+            + ". A micro-change plan is a 'narrative' written as natural, "
+            "flowing prose plus a 'where' list of the files/areas it touches."
         )
     unknown = [k for k in raw if k not in PLAN_FIELDS]
     if unknown:

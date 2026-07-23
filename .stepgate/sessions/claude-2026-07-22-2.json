@@ -1,0 +1,32 @@
+{
+  "session": "claude-2026-07-22-2",
+  "agent": "claude",
+  "created_at": "2026-07-23T00:46:34+00:00",
+  "proposal": {
+    "plan": {
+      "narrative": "Vamos embutir no proprio stepgate o modelo de fluxo que o owner definiu, pra que valha globalmente pra qualquer agente em qualquer projeto e nao dependa da memoria de um agente especifico. Hoje o comando 'close' so imprime uma frase pedindo pra registrar o proximo passo depois ('suggest the next step with stepgate next --suggest'), e o 'verify' nao captura nenhuma sugestao; a sugestao natural do ciclo so existe se o agente lembrar de rodar 'next --suggest' num passo separado. O modelo correto e outro: quando um ciclo e verificado, o agente ja deixa gravada ali a sugestao do proximo passo natural daquele ciclo, e e o 'close' que carrega e exibe essa sugestao pre-definida no momento de fechar. Isso faz os ciclos verificados se acumularem como uma fila de closes pendentes — cada sessao VERIFIED com sua sugestao ja e um item dessa fila, visivel no 'status' — que podem ser fechados depois, sem nunca travar o avanco pra proxima proposta. O 'next' mantem exatamente o sentido que ja tem: trazer uma sugestao de proximo passo, entendida como um caminho DIFERENTE do que o close proporia sozinho; ele nao exige 'close' e os dois seguem independentes. Concretamente: em cli.py, o subcomando 'verify' ganha um --suggest opcional (a sugestao natural do ciclo) e o help do 'close' passa a refletir que ele carrega essa sugestao. Em lifecycle.py, cmd_verify passa a gravar args.suggest em session.pending_suggestion quando fornecido (reaproveitando o slot que ja existe, sem nova estrutura de dados), e cmd_close passa a exibir session.pending_suggestion se houver — em vez da frase generica atual pedindo pra registrar depois. O bloco de instrucoes que o 'init' injeta em CLAUDE.md/AGENTS.md e reescrito pra descrever esse fluxo: verify pode registrar a sugestao natural, close a carrega, next traz um caminho alternativo e nao depende de close, e ciclos verificados formam uma fila de closes. Isso NAO altera a maquina de estados (as transicoes PENDING->APPROVED->EXECUTED->VERIFIED->CLOSED continuam iguais) nem torna --suggest obrigatorio, entao fluxos existentes seguem validos. Vou verificar rodando pytest (ajustando/estendendo os testes de next/close/verify conforme necessario), e manualmente: rodar um ciclo ate verify --suggest 'passo X', confirmar que close exibe 'passo X', e confirmar que 'next --suggest' ainda registra e sobrescreve uma sugestao alternativa de forma independente.",
+      "where": [
+        "src/stepgate/cli.py",
+        "src/stepgate/commands/lifecycle.py",
+        "src/stepgate/commands/init_cmd.py",
+        "tests/test_cli_smoke.py",
+        "CLAUDE.md",
+        "AGENTS.md"
+      ]
+    },
+    "state": "ABANDONED",
+    "created_at": "2026-07-23T00:46:34+00:00",
+    "updated_at": "2026-07-23T00:53:39+00:00",
+    "events": [
+      {
+        "ts": "2026-07-23T00:53:39+00:00",
+        "action": "abandon",
+        "data": {
+          "reason": "Ajuste: a proposta e reescrita pra incluir tambem o novo comando 'exit' (encerra o modo de uso, lista a fila de VERIFIED pendentes de close e pergunta o que fechar, sem sugerir proximos passos). Reproposta em seguida."
+        }
+      }
+    ]
+  },
+  "pending_suggestion": null,
+  "closed_proposals": 0
+}

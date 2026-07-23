@@ -1,0 +1,57 @@
+{
+  "session": "claude-2026-07-22-3",
+  "agent": "claude",
+  "created_at": "2026-07-23T00:53:44+00:00",
+  "proposal": {
+    "plan": {
+      "narrative": "Vamos embutir no proprio stepgate o modelo de fluxo que o owner definiu, pra que valha globalmente pra qualquer agente em qualquer projeto e nao dependa da memoria de um agente especifico, e ao mesmo tempo adicionar um comando novo 'exit' que fecha o modo de uso de forma limpa. Duas mudancas conectadas: (1) o fluxo de sugestoes verify/close/next, e (2) o comando exit. Sobre o fluxo: hoje o 'close' so imprime uma frase pedindo pra registrar o proximo passo depois, e o 'verify' nao captura nenhuma sugestao; a sugestao natural do ciclo so existe se o agente lembrar de rodar 'next --suggest' num passo separado. O modelo correto e outro: quando um ciclo e verificado, o agente ja deixa gravada ali a sugestao do proximo passo natural, e e o 'close' que carrega e exibe essa sugestao pre-definida ao fechar. Isso faz os ciclos verificados se acumularem como uma fila de closes pendentes — cada sessao VERIFIED com sua sugestao ja e um item dessa fila, visivel no 'status' — que podem ser fechados depois, sem nunca travar o avanco pra proxima proposta. O 'next' mantem o sentido que ja tem: trazer uma sugestao de proximo passo entendida como um caminho DIFERENTE do que o close proporia sozinho; nao exige 'close' e os dois seguem independentes. Sobre o exit: e o sinal de 'estou saindo do modo de uso'. Diferente do fluxo normal, o exit PARA de emitir sugestoes de proximo passo (nao faz sentido sugerir continuidade quando se esta encerrando); em vez disso ele lista a fila de ciclos VERIFIED aguardando close e PERGUNTA ao usuario se quer fechar algum, todos, ou nenhum — o fechamento continua deliberado, nunca em lote silencioso. Seguindo o mesmo mecanismo ja definido pro encerramento, o stepgate registra o exit como um evento no historico e imprime o fechamento; o agente le esse sinal e encerra a propria atuacao, se despedindo (o stepgate e um CLI e nao controla a conversa do agente, entao faz sua parte e delega a saida ao agente). Concretamente: em cli.py, o subcomando 'verify' ganha um --suggest opcional e e adicionado um novo subcomando 'exit' (com alias em portugues 'sair'). Em lifecycle.py, cmd_verify passa a gravar args.suggest em session.pending_suggestion quando fornecido (reaproveitando o slot que ja existe, sem nova estrutura), cmd_close passa a exibir session.pending_suggestion se houver em vez da frase generica, e um novo cmd_exit lista as sessoes VERIFIED pendentes de close, registra um evento 'exit' no historico e imprime um resumo de despedida sem sugerir proximos passos — sem fechar nada por conta propria, deixando a decisao de fechar pro usuario. O bloco que o 'init' injeta em CLAUDE.md/AGENTS.md e reescrito pra descrever esse fluxo e o novo exit. Isso NAO altera a maquina de estados existente (as transicoes PENDING->APPROVED->EXECUTED->VERIFIED->CLOSED continuam iguais) nem torna --suggest obrigatorio, entao fluxos existentes seguem validos; o exit nao introduz um novo estado de proposta, so um evento de sessao. Vou verificar rodando pytest (estendendo os testes de next/close/verify e cobrindo o exit), e manualmente: rodar um ciclo ate verify --suggest 'passo X' e confirmar que close exibe 'passo X'; confirmar que 'next --suggest' registra uma sugestao alternativa independente; e rodar 'exit' com uma fila de VERIFIED e confirmar que ele lista a fila, nao sugere proximos passos, e nao fecha nada sozinho.",
+      "where": [
+        "src/stepgate/cli.py",
+        "src/stepgate/commands/lifecycle.py",
+        "src/stepgate/commands/init_cmd.py",
+        "tests/test_cli_smoke.py",
+        "CLAUDE.md",
+        "AGENTS.md"
+      ]
+    },
+    "state": "CLOSED",
+    "created_at": "2026-07-23T00:53:44+00:00",
+    "updated_at": "2026-07-23T01:06:01+00:00",
+    "events": [
+      {
+        "ts": "2026-07-23T00:55:17+00:00",
+        "action": "approve",
+        "data": {}
+      },
+      {
+        "ts": "2026-07-23T00:58:14+00:00",
+        "action": "exec-log",
+        "data": {
+          "summary": "Fluxo verify/close/next + comando exit implementados. cli.py: verify ganha --suggest, novo subcomando exit (alias sair). lifecycle.py: cmd_verify grava pending_suggestion, cmd_close exibe a sugestao gravada, novo cmd_exit lista fila VERIFIED sem fechar nada. init_cmd.py/CLAUDE.md/AGENTS.md: fluxo reescrito + six-fields->narrative corrigido no init.",
+          "files": [
+            "src/stepgate/cli.py",
+            "src/stepgate/commands/lifecycle.py",
+            "src/stepgate/commands/init_cmd.py",
+            "CLAUDE.md",
+            "AGENTS.md"
+          ],
+          "git_diff_stat": ".stepgate/history.jsonl                     | 19 ++++++++\n .stepgate/sessions/claude-2026-07-13-2.json | 51 +++++++++++---------\n AGENTS.md                                   | 30 ++++++++----\n CLAUDE.md                                   | 30 ++++++++----\n src/stepgate/cli.py                         | 12 ++++-\n src/stepgate/commands/init_cmd.py           | 34 +++++++++-----\n src/stepgate/commands/lifecycle.py          | 72 +++++++++++++++++++++++++++--\n src/stepgate/commands/views.py              | 14 +++++-\n src/stepgate/model.py                       | 24 +++++-----\n src/stepgate/render.py                      | 29 ++++++++----\n src/stepgate/store.py                       | 14 ++++++\n tests/conftest.py                           | 13 ++++--\n tests/test_cli_smoke.py                     |  7 +--\n 13 files changed, 257 insertions(+), 92 deletions(-)"
+        }
+      },
+      {
+        "ts": "2026-07-23T00:58:22+00:00",
+        "action": "verify",
+        "data": {
+          "evidence": "pytest 37 passed. Manual: verify --suggest grava e close exibe a sugestao (Recorded next step); next --suggest registra caminho alternativo independente; exit lista fila VERIFIED (alpha, beta) com suas sugestoes, nao sugere proximo passo, nao fecha nada (status confirma ambos VERIFIED, Closed 0). Alias 'sair' e --suggest no verify presentes no cli."
+        }
+      },
+      {
+        "ts": "2026-07-23T01:06:01+00:00",
+        "action": "close",
+        "data": {}
+      }
+    ]
+  },
+  "pending_suggestion": null,
+  "closed_proposals": 1
+}

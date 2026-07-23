@@ -4,49 +4,61 @@
   "created_at": "2026-07-14T01:09:50+00:00",
   "proposal": {
     "plan": {
-      "what": "Elevar o numero de versao do pacote de 0.1.0 para 0.2.0, alterando a unica linha que o define. O arquivo src/stepgate/__init__.py contem hoje a linha '__version__ = \"0.1.0\"' e passara a conter '__version__ = \"0.2.0\"'. Nenhuma outra linha do arquivo muda, e nenhum outro arquivo e tocado por esta micro-mudanca — o pyproject.toml ja le a versao dinamicamente dessa constante (tool.hatch.version aponta para src/stepgate/__init__.py), entao o bump se propaga sozinho para o build e para os metadados do pacote.",
-      "why": "A versao 0.1.0 ja esta publicada no PyPI e o indice nao permite sobrescrever uma versao existente; um novo upload de 0.1.0 seria rejeitado. Os dois ciclos recem-fechados introduziram comportamento novo e compativel com as versoes anteriores — o comando 'next'/'proximo' agora funciona sem o argumento --suggest (modo leitura) e os quatro verbos de fluxo ganharam apelidos em portugues. Por semver, adicao de funcionalidade retrocompativel pede incremento de minor, portanto 0.2.0. Este bump precisa existir antes de qualquer novo build ou publicacao para que o artefato carregue o numero correto e o upload ao PyPI seja aceito.",
+      "what": "Vamos substituir o schema de proposta do stepgate: hoje o plan.json exige cinco campos de prosa separados (what, why, how, expected_result, verification) mais o where, e o painel renderiza cada um como um bloco rotulado empilhado, o que faz toda proposta se ler como um formulario preenchido em vez de uma redacao. A mudanca troca esses cinco campos por um unico campo 'narrative' — a proposta escrita como um texto corrido e direcional, do jeito que um humano explicaria a mudanca ('vamos fazer isso porque tal coisa afeta tal outra, mudamos assim pra ficar assado, com esse resultado, mexendo nestes arquivos') — mantendo o 'where' intacto como lista estruturada de arquivos ao lado, invisivel como formulario para quem le mas ainda usado pela maquina.",
+      "why": "O owner do projeto apontou que as propostas saem rasas e em formato de marcacao, dificil de ler: os rotulos separados (o que / porque / como) fragmentam a leitura e nao mostram o impacto real de forma fluida. A causa raiz nao esta so no render — enquanto a ENTRADA for cinco campos isolados, o painel sempre vai carregar a costura de um formulario, por mais que o render tente junta-los. Por isso a decisao foi mexer no schema de entrada, nao so na apresentacao. O 'where' precisa sobreviver como lista estruturada porque duas features dependem dele: a deteccao de sobreposicao de escopo entre sessoes (o aviso 'scope overlap' em views.py, que faz interseccao de conjuntos de arquivos) e o 'approve --adjust --scope', que reescreve o where pra estreitar o escopo aprovado. A verificacao deixa de ser campo proprio porque parte do seu valor real acontece no momento do 'stepgate verify --evidence', nao na proposta — como verificar ja pode ser dito dentro da propria narrativa.",
       "where": [
-        "src/stepgate/__init__.py — a linha __version__, unica alteracao desta micro-mudanca"
+        "src/stepgate/model.py",
+        "src/stepgate/render.py",
+        "src/stepgate/commands/views.py",
+        "tests/conftest.py",
+        "tests/test_cli_smoke.py",
+        "CLAUDE.md",
+        "AGENTS.md"
       ],
-      "how": "Editar src/stepgate/__init__.py substituindo exatamente a string '0.1.0' por '0.2.0' na atribuicao de __version__, preservando aspas, espacamento e o restante do arquivo. Como o hatchling deriva a versao dessa constante, nenhuma edicao em pyproject.toml e necessaria nem desejada. Depois confirmar que a CLI reporta a nova versao.",
-      "expected_result": "A constante __version__ passa a valer '0.2.0'. 'python -m stepgate --version' imprime 'stepgate 0.2.0'. O proximo 'python -m build' produzira artefatos nomeados stepgate-0.2.0 (wheel e sdist), aptos a serem enviados ao PyPI sem colisao com a 0.1.0 ja publicada.",
-      "verification": "Rodar 'python -m stepgate --version' e conferir que imprime exatamente 'stepgate 0.2.0'. Rodar a suite pytest para garantir que nada quebrou com a mudanca de constante (37 testes atuais devem seguir verdes). O build e o upload ao PyPI nao fazem parte desta micro-mudanca — sao passos seguintes, apos commit e push."
+      "how": "Em model.py, PLAN_FIELDS passa a ser ('narrative', 'where') e validate_plan valida apenas esses dois: narrative como string nao-vazia (prosa), where como lista de arquivos (aceitando string separada por virgula, como hoje). PLAN_FIELD_LABELS e ajustado. Em render.py, plan_as_prose para de emitir os rotulos italicizados 'Touches:/Expected result:/Verification:' e passa a imprimir a narrative como um bloco de prosa limpo, seguido discretamente por uma linha dos arquivos afetados derivada de where. Em views.py, o history (linha ~124) troca plan['what'] por um trecho inicial de plan['narrative'] truncado; a deteccao de overlap em _overlaps continua usando plan['where'] sem mudanca. Em conftest.py, o dicionario PLAN de teste e reescrito pro novo formato (narrative + where), e em test_cli_smoke.py os asserts que hoje checam PLAN['what'] passam a checar um trecho da narrative, e o teste de --adjust --scope (que verifica plan['where']) continua valido. Em CLAUDE.md e AGENTS.md, o bloco que descreve 'a JSON object with six fields (what, why, where, how, expected_result, verification)' e reescrito pra descrever o novo formato: uma narrativa em prosa corrida mais a lista where. IMPACTO CONCRETO — antes: um plan.json valido tinha 6 chaves e o painel mostrava 6 blocos rotulados empilhados; depois: um plan.json valido tem 2 chaves (narrative, where) e o painel mostra um paragrafo corrido seguido dos arquivos. QUEM E AFETADO: todo fluxo de propose daqui pra frente e a forma como o agente escreve o plano; o overlap de escopo e o --adjust --scope continuam funcionando identicos porque where e preservado. RISCO RESIDUAL: sessoes ja salvas em .stepgate/sessions/*.json no formato antigo (6 campos) — ao serem lidas pelo status/show/history, render e views vao procurar 'narrative' e nao achar; a mudanca precisa de um fallback de leitura que aceite o formato antigo (se nao houver 'narrative', reconstruir a exibicao a partir dos campos velhos) pra nao quebrar o historico existente deste proprio repo, que tem sessoes CLOSED reais.",
+      "expected_result": "Escrever uma proposta passa a ser escrever um plan.json com duas chaves — narrative (a redacao corrida) e where (a lista de arquivos) — e o painel do stepgate exibe essa narrativa como prosa continua e legivel, sem rotulos de formulario, seguida dos arquivos afetados. Uso legitimo existente (overlap de escopo, approve --adjust --scope, history) continua funcionando, inclusive lendo sessoes antigas no formato de 6 campos via fallback.",
+      "verification": "Rodar pytest apos reescrever conftest/testes e confirmar a suite verde. Rodar 'stepgate propose' com um plan.json no novo formato e inspecionar visualmente o painel pra confirmar que le como redacao, nao formulario. Rodar 'stepgate status' e 'stepgate show' contra as sessoes antigas ja existentes neste repo (formato de 6 campos) pra confirmar que o fallback de leitura nao quebra. Confirmar que 'stepgate propose --agent codex' sobre where sobreposto ainda dispara o aviso de overlap."
     },
     "state": "CLOSED",
-    "created_at": "2026-07-14T01:09:50+00:00",
-    "updated_at": "2026-07-14T01:11:00+00:00",
+    "created_at": "2026-07-23T00:24:28+00:00",
+    "updated_at": "2026-07-23T01:06:00+00:00",
     "events": [
       {
-        "ts": "2026-07-14T01:10:32+00:00",
+        "ts": "2026-07-23T00:34:34+00:00",
         "action": "approve",
         "data": {}
       },
       {
-        "ts": "2026-07-14T01:10:52+00:00",
+        "ts": "2026-07-23T00:37:03+00:00",
         "action": "exec-log",
         "data": {
-          "summary": "Bump de versao 0.1.0 -> 0.2.0 na constante __version__.",
+          "summary": "Schema de proposta trocado de 6 campos para narrative+where. model.py (PLAN_FIELDS, validate_plan, LEGACY_PLAN_FIELDS), render.py (plan_as_prose com fallback legado), views.py (_plan_snippet no history), testes (conftest PLAN, test_cli_smoke asserts), doc (CLAUDE.md e AGENTS.md).",
           "files": [
-            "src/stepgate/__init__.py"
+            "src/stepgate/model.py",
+            "src/stepgate/render.py",
+            "src/stepgate/commands/views.py",
+            "tests/conftest.py",
+            "tests/test_cli_smoke.py",
+            "CLAUDE.md",
+            "AGENTS.md"
           ],
-          "git_diff_stat": ".stepgate/history.jsonl                     | 37 +++++++++++++++++++++++++\n .stepgate/sessions/claude-2026-07-09-1.json | 40 +++++++++++++--------------\n AGENTS.md                                   | 16 +++++++++++\n CLAUDE.md                                   | 16 +++++++++++\n README.md                                   |  6 +++-\n src/stepgate/__init__.py                    |  2 +-\n src/stepgate/cli.py                         | 16 +++++++----\n src/stepgate/commands/init_cmd.py           |  5 +++-\n src/stepgate/commands/lifecycle.py          | 18 ++++++++++++\n tests/test_cli_smoke.py                     | 43 +++++++++++++++++++++++++++++\n 10 files changed, 170 insertions(+), 29 deletions(-)"
+          "git_diff_stat": ".stepgate/history.jsonl                     | 12 +++++++\n .stepgate/sessions/claude-2026-07-13-2.json | 51 ++++++++++-------------------\n AGENTS.md                                   | 15 +++++----\n CLAUDE.md                                   | 15 +++++----\n src/stepgate/commands/views.py              | 14 +++++++-\n src/stepgate/model.py                       | 24 +++++++-------\n src/stepgate/render.py                      | 29 ++++++++++------\n src/stepgate/store.py                       | 14 ++++++++\n tests/conftest.py                           | 13 +++++---\n tests/test_cli_smoke.py                     |  7 ++--\n 10 files changed, 117 insertions(+), 77 deletions(-)"
         }
       },
       {
-        "ts": "2026-07-14T01:10:52+00:00",
+        "ts": "2026-07-23T00:37:12+00:00",
         "action": "verify",
         "data": {
-          "evidence": "python -m stepgate --version imprime 'stepgate 0.2.0'; pytest: 37 passed."
+          "evidence": "pytest: 37 passed. Painel novo (narrative+where) renderiza como paragrafo de prosa + linha 'Touches:', confirmado em projeto temp. Fallback: 'status' e 'show --session codex-2026-07-13-1' (sessao antiga de 6 campos) renderizam sem erro. Overlap: segundo propose com where sobreposto disparou o aviso 'scope overlap'. --adjust --scope coberto por test_approve_adjust_scope_narrows_where (verde)."
         }
       },
       {
-        "ts": "2026-07-14T01:11:00+00:00",
+        "ts": "2026-07-23T01:06:00+00:00",
         "action": "close",
         "data": {}
       }
     ]
   },
   "pending_suggestion": null,
-  "closed_proposals": 1
+  "closed_proposals": 3
 }

@@ -31,16 +31,25 @@ def state_text(state: str) -> Text:
 
 
 def plan_as_prose(plan: dict[str, Any]) -> Group:
-    """Render the six plan fields as connected paragraphs of prose."""
-    where = ", ".join(plan["where"])
-    paragraphs = [
-        Text(plan["what"]),
-        Text(plan["why"], style="dim"),
-        Text.assemble(("Touches: ", "italic"), where),
-        Text(plan["how"]),
-        Text.assemble(("Expected result: ", "italic"), plan["expected_result"]),
-        Text.assemble(("Verification: ", "italic"), plan["verification"]),
-    ]
+    """Render a proposal as flowing prose: the narrative, then the files.
+
+    New proposals carry a single ``narrative`` field. Sessions saved under the
+    legacy six-field schema are still rendered by stitching their old fields
+    into paragraphs, so existing history stays readable.
+    """
+    where = ", ".join(plan.get("where", []))
+    if "narrative" in plan:
+        paragraphs: list[Any] = [Text(plan["narrative"])]
+    else:
+        paragraphs = [
+            Text(plan.get("what", "")),
+            Text(plan.get("why", ""), style="dim"),
+            Text(plan.get("how", "")),
+            Text.assemble(("Expected result: ", "italic"), plan.get("expected_result", "")),
+            Text.assemble(("Verification: ", "italic"), plan.get("verification", "")),
+        ]
+    if where:
+        paragraphs.append(Text.assemble(("Touches: ", "italic"), where))
     spaced: list[Any] = []
     for para in paragraphs:
         spaced.append(para)

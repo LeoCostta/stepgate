@@ -1,0 +1,48 @@
+{
+  "session": "claude-2026-07-22-4",
+  "agent": "claude",
+  "created_at": "2026-07-23T00:59:42+00:00",
+  "proposal": {
+    "plan": {
+      "narrative": "Vamos atualizar o README.md — a doc publica que aparece tanto no GitHub quanto na pagina do PyPI (via readme='README.md' no pyproject) — porque ele ficou para tras em relacao a tudo que mudamos nesta sessao: ainda descreve o schema antigo de seis campos, o fluxo antigo de close/next, nao menciona o comando novo 'exit', e por cima tem um bug de formatacao pre-existente que quebra a tabela de comandos. Sao cinco ajustes, todos no mesmo arquivo. Primeiro, o paragrafo do schema (hoje: 'A proposal covers six points... what, why, where, how, expected result, verification') passa a descrever o formato narrative+where, com um texto do tipo: 'A proposal is written as one flowing narrative — what will change and why this step comes first, how it will be implemented, the expected result, and how it will be verified — plus a where list of the files, contracts, or flows it touches. It reads as a human would explain the change, not as labelled form fields. When an agent proposes, it presents that same narrative back to the user in prose before execution, not only inside the CLI panel.' Segundo, na secao 'A real cycle', o passo de verify passa a incluir --suggest ('stepgate verify --evidence \"...\" --suggest \"wire SalaJogo.tsx...\"') e o texto de close/next e reescrito pra explicar o modelo novo: a sugestao do proximo passo natural e gravada no verify, o close a exibe ao fechar, ciclos VERIFIED formam uma fila de closes que nao trava o avanco, e o next --suggest registra um caminho DIFERENTE do que o close traria. Terceiro, adicionar o comando exit ao diagrama/texto e explicar que ele encerra a sessao de trabalho: nao sugere nada, lista os ciclos VERIFIED aguardando close e pergunta quais fechar, sem fechar nada sozinho. Quarto, na tabela de Commands, atualizar a linha do verify pra 'stepgate verify --evidence \"...\" [--suggest \"...\"]', ajustar a descricao do close pra mencionar que ele traz o proximo passo gravado, e adicionar uma linha nova para 'stepgate exit'. Quinto, consertar o bug de formatacao: hoje o bloco de texto dos aliases em portugues (linhas ~116-119) foi inserido NO MEIO da tabela markdown, entre a linha do next e a do status, o que quebra a renderizacao da tabela no GitHub e no PyPI deixando status/history/doctor orfaos; a correcao e mover esse paragrafo de aliases pra DEPOIS do fim da tabela completa (apos a linha do doctor), e atualiza-lo pra dizer 'five flow verbs' incluindo 'sair' = exit. A correcao de seguranca do path traversal e interna e nao precisa figurar no README. Vou verificar relendo o README renderizado (conferindo que a tabela de comandos fica integra, que nao sobrou nenhuma mencao a 'six points/six fields', que exit e o alias sair aparecem, e que verify --suggest esta documentado) e rodando 'python -m build' ou ao menos 'twine check' se disponivel pra confirmar que o long_description do pacote continua valido; se build/twine nao estiverem instalados, faco a conferencia visual do arquivo.",
+      "where": [
+        "README.md"
+      ]
+    },
+    "state": "CLOSED",
+    "created_at": "2026-07-23T00:59:42+00:00",
+    "updated_at": "2026-07-23T01:06:02+00:00",
+    "events": [
+      {
+        "ts": "2026-07-23T01:00:28+00:00",
+        "action": "approve",
+        "data": {}
+      },
+      {
+        "ts": "2026-07-23T01:01:54+00:00",
+        "action": "exec-log",
+        "data": {
+          "summary": "README.md atualizado: schema six-points->narrative+where; secao 'A real cycle' com verify --suggest e novo fluxo close/next/fila; comando exit no diagrama e texto; tabela de comandos com verify --suggest, close (surface next step), exit; bug de formatacao corrigido (bloco de aliases movido pra depois da tabela, agora 'five flow verbs' com sair=exit).",
+          "files": [
+            "README.md"
+          ],
+          "git_diff_stat": ".stepgate/history.jsonl                     | 23 +++++++++\n .stepgate/sessions/claude-2026-07-13-2.json | 51 +++++++++++---------\n AGENTS.md                                   | 30 ++++++++----\n CLAUDE.md                                   | 30 ++++++++----\n README.md                                   | 53 ++++++++++++---------\n src/stepgate/cli.py                         | 12 ++++-\n src/stepgate/commands/init_cmd.py           | 34 +++++++++-----\n src/stepgate/commands/lifecycle.py          | 72 +++++++++++++++++++++++++++--\n src/stepgate/commands/views.py              | 14 +++++-\n src/stepgate/model.py                       | 24 +++++-----\n src/stepgate/render.py                      | 29 ++++++++----\n src/stepgate/store.py                       | 14 ++++++\n tests/conftest.py                           | 13 ++++--\n tests/test_cli_smoke.py                     |  7 +--\n 14 files changed, 292 insertions(+), 114 deletions(-)"
+        }
+      },
+      {
+        "ts": "2026-07-23T01:02:02+00:00",
+        "action": "verify",
+        "data": {
+          "evidence": "twine check PASSED nos dois artefatos (wheel + sdist): README renderiza como long_description do PyPI sem erros de markup. Grep confirma zero mencoes a 'six points/fields'. Tabela de comandos integra (11 linhas contiguas, aliases movidos pra apos a tabela). exit, sair=exit e verify --suggest presentes."
+        }
+      },
+      {
+        "ts": "2026-07-23T01:06:02+00:00",
+        "action": "close",
+        "data": {}
+      }
+    ]
+  },
+  "pending_suggestion": null,
+  "closed_proposals": 1
+}

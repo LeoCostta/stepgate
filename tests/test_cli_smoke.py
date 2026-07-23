@@ -5,7 +5,7 @@ verify -> close -> next --suggest -> status."""
 import json
 
 from stepgate.store import Store
-from tests.conftest import PLAN, run
+from tests.conftest import run
 
 
 def read_state(project, agent="claude"):
@@ -20,8 +20,9 @@ def test_full_cycle(project, plan_file, capsys):
 
     assert run("show", "--agent", "claude") == 0
     out = capsys.readouterr().out
-    assert PLAN["what"] in out.replace("\n", " ")  # rendered as prose, not raw JSON
-    assert '"what"' not in out
+    # rendered as prose, not raw JSON: a chunk of the narrative shows through
+    assert "atomic Postgres function" in out.replace("\n", " ")
+    assert '"narrative"' not in out
 
     assert run(
         "approve", "--agent", "claude", "--adjust",

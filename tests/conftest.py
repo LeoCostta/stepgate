@@ -6,12 +6,15 @@ from stepgate.cli import main
 
 
 PLAN = {
-    "what": "Create an atomic Postgres function for the Sanity decrement.",
-    "why": "Concurrent losses currently overwrite each other; this must land before any UI change.",
+    "narrative": (
+        "We'll create an atomic Postgres function for the Sanity decrement, "
+        "because concurrent losses currently overwrite each other and this "
+        "must land before any UI change. We'll follow the same pattern already "
+        "used in user_can_access_mesa, so that concurrent sanity losses no "
+        "longer overwrite each other, and confirm it with a simulated "
+        "concurrency test, a type-check, and npm test."
+    ),
     "where": ["migrations/013_sanity.sql", "src/types.ts"],
-    "how": "Follow the same pattern already used in user_can_access_mesa.",
-    "expected_result": "Concurrent sanity losses no longer overwrite each other.",
-    "verification": "Simulated concurrency test, type-check, npm test.",
 }
 
 

@@ -50,13 +50,17 @@ PENDING --approve--> APPROVED --exec-log--> EXECUTED --verify--> VERIFIED --clos
    +--reject--> REJECTED          (any non-terminal state) --abandon--> ABANDONED
 ```
 
-A proposal covers six points, each written as natural flowing prose (not a
-telegraphic form): **what** will change now, **why** this step comes first,
-**where** (files/contracts/flows touched), **how** it will be implemented,
-the **expected result**, and the **verification** that will demonstrate it.
-When an agent proposes a micro-change, it must also present those six points
-back to the user in flowing prose before execution, not only inside the CLI
-panel.
+VERIFIED cycles queue up until you close them - closing never blocks opening the
+next proposal. `stepgate exit` ends the working session: it suggests nothing,
+lists the VERIFIED cycles still awaiting close, and asks which (if any) to
+close - it never closes anything on its own.
+
+A proposal is written as one flowing **narrative** - what will change and why
+this step comes first, how it will be implemented, the expected result, and how
+it will be verified - plus a **where** list of the files, contracts, or flows it
+touches. It reads as a human would explain the change, not as labelled form
+fields. When an agent proposes a micro-change, it presents that same narrative
+back to the user in prose before execution, not only inside the CLI panel.
 
 Key rule: *a micro-change reduces the scope of execution, never the depth of
 investigation* - the agent still investigates everything it needs to
@@ -83,21 +87,25 @@ is captured automatically as objective evidence), and verifies:
 
 ```bash
 stepgate exec-log --summary "atomic decrement migration + typing" --files "migrations/013.sql,types.ts"
-stepgate verify --evidence "type-check ok, simulated concurrency test passed"
+stepgate verify --evidence "type-check ok, simulated concurrency test passed" \
+  --suggest "wire SalaJogo.tsx to the new function via supabase.rpc(...)"
 ```
 
-You close the cycle; the agent suggests - but does not start - the next step:
+Recording `--suggest` at verify time captures this cycle's natural next step.
+When you close the cycle, `stepgate close` surfaces that step - but never starts
+it:
 
 ```bash
 stepgate close
-stepgate next --suggest "wire SalaJogo.tsx to the new function via supabase.rpc(...)"
 ```
 
-The suggestion stays visible in `stepgate status` until a new proposal is
-opened. Running `stepgate next` with no `--suggest` only shows the currently
-recorded suggestion; it does not create or change one. The full trail lives in
-`stepgate history` - chronological, across
-all sessions and agents, append-only.
+Closing is deliberate: verified cycles simply queue up until closed, and never
+block opening the next proposal. If you want a *different* next step than the
+one close would surface, `stepgate next --suggest "..."` records that
+alternative - it does not require close and does not open a proposal. Running
+`stepgate next` with no `--suggest` only shows the current suggestion. The full
+trail lives in `stepgate history` - chronological, across all sessions and
+agents, append-only.
 
 ## Commands
 
@@ -109,17 +117,18 @@ all sessions and agents, append-only.
 | `stepgate approve [--adjust --scope ... --note ...]` | Approve (optionally with reduced scope) |
 | `stepgate reject --note "..."` | Reject a pending proposal |
 | `stepgate exec-log --summary "..." --files "..."` | Record execution (+ automatic `git diff --stat`) |
-| `stepgate verify --evidence "..."` | Record verification evidence |
-| `stepgate close` | Close a verified micro-change |
+| `stepgate verify --evidence "..." [--suggest "..."]` | Record verification evidence (and, with `--suggest`, this cycle's next step) |
+| `stepgate close` | Close a verified micro-change and surface its recorded next step |
 | `stepgate abandon --reason "..."` | Cleanly abandon from any non-terminal state |
-| `stepgate next [--suggest "..."]` | With `--suggest`, record a next-step suggestion; without it, show the current one |
-
-The four flow verbs also accept Portuguese aliases - English stays the default:
-`aprovar` = `approve`, `rejeitar` = `reject`, `fechar` = `close`,
-`proximo` = `next`.
+| `stepgate next [--suggest "..."]` | With `--suggest`, record an alternative next-step suggestion; without it, show the current one |
 | `stepgate status` | Current session + aggregated project view |
 | `stepgate history [--session X] [--since DATE]` | Append-only, cross-session log |
 | `stepgate doctor` | Report corrupted/invalid state files (fixes nothing) |
+| `stepgate exit` | End the working session: list VERIFIED cycles awaiting close, suggest nothing, close nothing |
+
+The five flow verbs also accept Portuguese aliases - English stays the default:
+`aprovar` = `approve`, `rejeitar` = `reject`, `fechar` = `close`,
+`proximo` = `next`, `sair` = `exit`.
 
 Multiple agents can work concurrently: each session has its own state file
 (`.stepgate/sessions/claude-2026-07-09-1.json` - human-readable names, not
